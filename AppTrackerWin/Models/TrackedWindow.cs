@@ -12,4 +12,10 @@ namespace AppTrackerWin.Models
         public string Name { get; set; }
         public int TimeSpent { get; set; }
     }
+
+    public class TrackedWindowStorage: TrackedWindow
+    {
+        public string UserName { get; set; }
+        public DateTime Date { get; set; }
+    }
 }

@@ -21,5 +21,8 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <Label Name="labelInfo" Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="27,383,0,0" Width="434"/>
+        <Button Name="btnExport" Content="Export" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="27,358,0,0" Click="btnExport_Click" />
+        <Button Name="btnOpen" Content="Open File" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="125,358,0,0" Visibility="Hidden" Click="btnOpen_Click"/>
     </Grid>
 </Window>

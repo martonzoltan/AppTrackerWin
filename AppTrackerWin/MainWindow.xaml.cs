@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
-
+using System.Windows.Media;
 
 namespace AppTrackerWin
 {
@@ -18,6 +18,19 @@ namespace AppTrackerWin
         Process ExcelProcess = null;
         List<TrackedWindow> listOfVisitedWindows = new List<TrackedWindow>();
         StorageHelper _storage = new StorageHelper();
+        ExcelHelper _excel = new ExcelHelper();
+        DateTime started = new DateTime();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventProc lpfnWinEventProc, int idProcess, int idThread, uint dwflags);
+        [DllImport("user32.dll")]
+        internal static extern int UnhookWinEvent(IntPtr hWinEventHook);
+        internal delegate void WinEventProc(IntPtr hWinEventHook, uint iEvent, IntPtr hWnd, int idObject, int idChild, int dwEventThread, int dwmsEventTime);
+
+        const uint WINEVENT_OUTOFCONTEXT = 0;
+        const uint EVENT_SYSTEM_FOREGROUND = 3;
+        private IntPtr winHook;
+        private WinEventProc listener;
 
         public MainWindow()
         {
@@ -34,6 +47,30 @@ namespace AppTrackerWin
                     this.Show();
                     this.WindowState = WindowState.Normal;
                 };
+        }
+
+        private void btnExport_Click(object sender, RoutedEventArgs e)
+        {
+            labelInfo.Content = "";
+            List <TrackedWindowStorage> allStoredData = _storage.GetAllDatabaseEntries();
+            var returnData =_excel.Save(allStoredData);
+            if (returnData.isError)
+            {
+                labelInfo.Content = returnData.Message;
+                labelInfo.Foreground = new SolidColorBrush(Colors.Red);
+                btnOpen.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                labelInfo.Content = "Succesfully Exported";
+                labelInfo.Foreground = new SolidColorBrush(Colors.Black);
+                btnOpen.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void btnOpen_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(@"apps_usage.xlsx");
         }
 
         protected override void OnStateChanged(EventArgs e)
@@ -75,19 +112,10 @@ namespace AppTrackerWin
                 sw.Reset();
                 sw.Start();
                 ExcelProcess = p;
+                started = DateTime.Now;
+                Console.WriteLine("Process started: " + p.MainWindowTitle + " At: " + DateTime.Now);
             }
         }
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventProc lpfnWinEventProc, int idProcess, int idThread, uint dwflags);
-        [DllImport("user32.dll")]
-        internal static extern int UnhookWinEvent(IntPtr hWinEventHook);
-        internal delegate void WinEventProc(IntPtr hWinEventHook, uint iEvent, IntPtr hWnd, int idObject, int idChild, int dwEventThread, int dwmsEventTime);
-
-        const uint WINEVENT_OUTOFCONTEXT = 0;
-        const uint EVENT_SYSTEM_FOREGROUND = 3;
-        private IntPtr winHook;
-        private WinEventProc listener;
 
         public void StartListeningForWindowChanges()
         {
@@ -105,6 +133,8 @@ namespace AppTrackerWin
         {  
             if(ExcelProcess!=null)
             {
+                Console.WriteLine("Process stopped: " + ExcelProcess.MainWindowTitle + " At: " + DateTime.Now);
+
                 sw.Stop();
                 var cleanedWindowTitle = ExcelProcess.MainWindowTitle;
                 if (cleanedWindowTitle != "")
@@ -116,7 +146,7 @@ namespace AppTrackerWin
                 {
                     cleanedWindowTitle = ExcelProcess.ProcessName + " Started at: " + ExcelProcess.StartTime;
                 }
-                TrackedWindow trackedWindow = new TrackedWindow() { Name = cleanedWindowTitle, TimeSpent = sw.Elapsed.Seconds };
+                TrackedWindow trackedWindow = new TrackedWindow() { Name = cleanedWindowTitle, TimeSpent = (int)(DateTime.Now - started).TotalSeconds };
                 _storage.AddEntryToDatabase(trackedWindow);
 
                 bool found = false;
@@ -124,6 +154,8 @@ namespace AppTrackerWin
                 {
                     if(item.Name == trackedWindow.Name)
                     {
+                        Console.WriteLine("Adding time: " + ExcelProcess.MainWindowTitle + " time: " + trackedWindow.TimeSpent);
+
                         listOfVisitedWindows.Find(x => x.Name == item.Name).TimeSpent += trackedWindow.TimeSpent;
                         found = true;
                         break;
@@ -131,6 +163,8 @@ namespace AppTrackerWin
                 }
                 if (!found)
                 {
+                    Console.WriteLine("Process not found: " + ExcelProcess.MainWindowTitle );
+
                     listOfVisitedWindows.Add(trackedWindow);
                 }
                 lbList.ItemsSource = listOfVisitedWindows;
