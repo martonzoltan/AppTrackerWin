@@ -1,4 +1,5 @@
 ﻿using AppTrackerWin.Models;
+using AppTrackerWin.Helper;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,10 +17,13 @@ namespace AppTrackerWin
         Stopwatch sw = new Stopwatch();
         Process ExcelProcess = null;
         List<TrackedWindow> listOfVisitedWindows = new List<TrackedWindow>();
+        StorageHelper _storage = new StorageHelper();
+
         public MainWindow()
         {
             InitializeComponent();
             StartListeningForWindowChanges();
+            _storage.CreateDatabaseFileIfNotExists();
 
             System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
             ni.Icon = new System.Drawing.Icon("Main.ico");
@@ -113,6 +117,8 @@ namespace AppTrackerWin
                     cleanedWindowTitle = ExcelProcess.ProcessName + " Started at: " + ExcelProcess.StartTime;
                 }
                 TrackedWindow trackedWindow = new TrackedWindow() { Name = cleanedWindowTitle, TimeSpent = sw.Elapsed.Seconds };
+                _storage.AddEntryToDatabase(trackedWindow);
+
                 bool found = false;
                 foreach(var item in listOfVisitedWindows)
                 {
