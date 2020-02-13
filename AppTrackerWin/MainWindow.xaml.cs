@@ -52,7 +52,15 @@ namespace AppTrackerWin
         private void btnExport_Click(object sender, RoutedEventArgs e)
         {
             labelInfo.Content = "";
-            List <TrackedWindowStorage> allStoredData = _storage.GetAllDatabaseEntries();
+            List<TrackedWindowStorage> allStoredData = new List<TrackedWindowStorage>();
+            if (startDate.SelectedDate.HasValue && endDate.SelectedDate.HasValue)
+            {
+                allStoredData = _storage.GetAllDatabaseEntries(startDate.SelectedDate, endDate.SelectedDate);
+            }
+            else
+            {
+                allStoredData = _storage.GetAllDatabaseEntries();
+            }
             var returnData =_excel.Save(allStoredData);
             if (returnData.isError)
             {
@@ -147,29 +155,32 @@ namespace AppTrackerWin
                     cleanedWindowTitle = ExcelProcess.ProcessName + " Started at: " + ExcelProcess.StartTime;
                 }
                 TrackedWindow trackedWindow = new TrackedWindow() { Name = cleanedWindowTitle, TimeSpent = (int)(DateTime.Now - started).TotalSeconds };
-                _storage.AddEntryToDatabase(trackedWindow);
 
-                bool found = false;
-                foreach(var item in listOfVisitedWindows)
+                if (!trackedWindow.Name.Contains("apps_usage"))
                 {
-                    if(item.Name == trackedWindow.Name)
+                    _storage.AddEntryToDatabase(trackedWindow);
+
+                    bool found = false;
+                    foreach (var item in listOfVisitedWindows)
                     {
-                        Console.WriteLine("Adding time: " + ExcelProcess.MainWindowTitle + " time: " + trackedWindow.TimeSpent);
+                        if (item.Name == trackedWindow.Name)
+                        {
+                            Console.WriteLine("Adding time: " + ExcelProcess.MainWindowTitle + " time: " + trackedWindow.TimeSpent);
 
-                        listOfVisitedWindows.Find(x => x.Name == item.Name).TimeSpent += trackedWindow.TimeSpent;
-                        found = true;
-                        break;
+                            listOfVisitedWindows.Find(x => x.Name == item.Name).TimeSpent += trackedWindow.TimeSpent;
+                            found = true;
+                            break;
+                        }
                     }
-                }
-                if (!found)
-                {
-                    Console.WriteLine("Process not found: " + ExcelProcess.MainWindowTitle );
+                    if (!found)
+                    {
+                        Console.WriteLine("Process not found: " + ExcelProcess.MainWindowTitle);
 
-                    listOfVisitedWindows.Add(trackedWindow);
+                        listOfVisitedWindows.Add(trackedWindow);
+                    }
+                    lbList.ItemsSource = listOfVisitedWindows;
+                    lbList.Items.Refresh();
                 }
-                lbList.ItemsSource = listOfVisitedWindows;
-                lbList.Items.Refresh();
-
             }
             GetForegroundProcessName(); 
         }

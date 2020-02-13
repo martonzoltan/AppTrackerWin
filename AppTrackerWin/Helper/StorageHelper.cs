@@ -52,17 +52,28 @@ namespace AppTrackerWin.Helper
             }
         }
 
-        public List<TrackedWindowStorage> GetAllDatabaseEntries()
+        public List<TrackedWindowStorage> GetAllDatabaseEntries(DateTime? startDate=null, DateTime? endDate=null)
         {
             List<TrackedWindowStorage> twStorage = new List<TrackedWindowStorage>();
+            
             using (var connection = new SQLiteConnection(DatabaseSource))
             {
                 // Create a database command
                 using (var command = new SQLiteCommand(connection))
                 {
                     connection.Open();
+
+                    string queryCondition = "";
+                    if (startDate != null && endDate != null)
+                    {
+                        queryCondition = "Where InsertedDate > @start AND InsertedDate < @end ";
+                        command.Parameters.Add(new SQLiteParameter("start", startDate));
+                        command.Parameters.Add(new SQLiteParameter("end", endDate));
+                    }
+
                     command.CommandText = "Select InsertedDate, User, Application, sum(TimeSpent) AS 'TimeSpent' "+
                         "FROM AppTimeLogs "+
+                        queryCondition +
                         "Group By InsertedDate, User, Application ORDER BY InsertedDate ASC, sum(TimeSpent) DESC";
 
                     using (var reader = command.ExecuteReader())
@@ -76,7 +87,6 @@ namespace AppTrackerWin.Helper
                                 Date = (DateTime)reader["InsertedDate"],
                                 TimeSpent = Convert.ToInt32(reader["TimeSpent"])
                             });
-                            //Console.WriteLine(reader["User"] + " : " + reader["Application"] + " - " + reader["TimeSpent"]);
                         }
                     }
                     connection.Close(); // Close the connection to the database
@@ -84,6 +94,5 @@ namespace AppTrackerWin.Helper
             }
             return twStorage;
         }
-        
     }
 }
