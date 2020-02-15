@@ -7,41 +7,31 @@
         xmlns:local="clr-namespace:AppTrackerWin"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type local:ExcelDatabaseManagement}">
+            <local:ExcelDatabaseManagement/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:ExcelTrackingList}">
+            <local:ExcelTrackingList/>
+        </DataTemplate>
+    </Window.Resources>
+
     <Window.DataContext>
         <localVM:MainWindowViewModel />
     </Window.DataContext>
-
-    <Window.Resources>
-        <DataTemplate x:Key="View1Template" DataType="{x:Type localVM:MainWindowViewModel}">
-            <local:ExcelTrackingList />
-        </DataTemplate>
-
-        <DataTemplate x:Key="View2Template" DataType="{x:Type localVM:MainWindowViewModel}">
-            <local:ExcelDatabaseManagement />
-        </DataTemplate>
-    </Window.Resources>
 
     <Grid>
         <Menu>
             <MenuItem Header="Nav"  
                       FontSize="14">
                 <MenuItem Header="Excel List Tracking"  
-                      FontSize="14" Click="excelListTracking"/>
+                      FontSize="14" Command="{Binding GotoView1Command}"/>
                 <MenuItem Header="Manage Database"  
-                      FontSize="14" Click="manageDatabase"/>
+                      FontSize="14" Command="{Binding GotoView2Command}"/>
             </MenuItem>
         </Menu>
         <ContentControl Content="{Binding CurrentView}">
-            <ContentControl.Style>
-                <Style TargetType="{x:Type ContentControl}">
-                    <Setter Property="ContentTemplate" Value="{StaticResource View1Template}" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding SwitchView}" Value="1">
-                            <Setter Property="ContentTemplate" Value="{StaticResource View2Template}" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </ContentControl.Style>
+            
         </ContentControl>
     </Grid>
 </Window>

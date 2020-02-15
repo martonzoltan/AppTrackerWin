@@ -123,7 +123,10 @@
     <Compile Include="ExcelTrackingList.xaml.cs">
       <DependentUpon>ExcelTrackingList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Helper\EventArgs.cs" />
+    <Compile Include="Helper\EventRaiser.cs" />
     <Compile Include="Helper\ExcelHelper.cs" />
+    <Compile Include="Helper\RelayCommand.cs" />
     <Compile Include="Helper\StorageHelper.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -134,6 +137,7 @@
     <Compile Include="Models\ErrorHandling.cs" />
     <Compile Include="Models\MainWindowViewModel.cs" />
     <Compile Include="Models\TrackedWindow.cs" />
+    <Compile Include="Models\ViewModelBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
