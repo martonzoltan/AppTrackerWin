@@ -7,8 +7,24 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TextBlock FontSize="20" Margin="10" VerticalAlignment="Center" HorizontalAlignment="Center">
-            Screen for View2
-        </TextBlock>
+        <ListView x:Name="listView" Margin="0,26,10,94">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ID}"/>
+                    <GridViewColumn Header="Excel Name" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Time Spent" DisplayMemberBinding="{Binding TimeSpent}"/>
+                    <GridViewColumn Header="Date" DisplayMemberBinding="{Binding Path=Date, StringFormat='yyyy-MM-dd'}" />
+                    <GridViewColumn Header="Action">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Delete" Margin="0" VerticalAlignment="Center" Click="Delete_Entry_Click" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button x:Name="dbClear" Content="Refresh" HorizontalAlignment="Left" Margin="22,361,0,0" VerticalAlignment="Top" Width="94" Click="btn_Refresh_Click" Height="30"/>
+        <Button x:Name="dbClear_Copy" Content="Clear database" HorizontalAlignment="Left" Margin="133,361,0,0" VerticalAlignment="Top" Width="94" Click="btn_ClearDB_Click" Height="30"/>
     </Grid>
 </UserControl>
